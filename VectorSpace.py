@@ -61,7 +61,7 @@ class VectorSpace:
         wordList = self.parser.tokenise(wordString)
         wordList = self.parser.removeStopWords(wordList)
         for word in wordList:
-            vector[self.vectorKeywordIndex[word]] += 1; #Use simple Term Count Model
+            vector[self.vectorKeywordIndex[word]] += 1; #Use TF Model
         return vector
 
 
@@ -71,11 +71,11 @@ class VectorSpace:
         return query
 
 
-    def related(self,documentId):
-        """ find documents that are related to the document indexed by passed Id within the document Vectors"""
-        ratings = [util.cosine(self.documentVectors[documentId], documentVector) for documentVector in self.documentVectors]
+    #def related(self,documentId):
+        #""" find documents that are related to the document indexed by passed Id within the document Vectors"""
+        #ratings = [util.cosine(self.documentVectors[documentId], documentVector) for documentVector in self.documentVectors]
         #ratings.sort(reverse=True)
-        return ratings
+        #return ratings
 
 
     def search(self,searchList):
@@ -83,7 +83,7 @@ class VectorSpace:
         queryVector = self.buildQueryVector(searchList)
 
         ratings = [util.cosine(queryVector, documentVector) for documentVector in self.documentVectors]
-        #ratings.sort(reverse=True)
+        ratings.sort(reverse=True)
         return ratings
 
 

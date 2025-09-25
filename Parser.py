@@ -28,7 +28,7 @@ class Parser:
 		return [word for word in list if word not in self.stopwords ]
 
 
-	def tokenise(self, string):
+	def tokenise(self, string): #將string轉成token並且做stemming
 		""" break string up into tokens and stem words """
 		string = self.clean(string)
 		words = string.split(" ")
