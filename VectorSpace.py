@@ -18,9 +18,10 @@ class VectorSpace:
     parser=None
 
 
-    def __init__(self, documents=[]):
+    def __init__(self, documents=[], doc_names=[]):
         self.documentVectors=[]
         self.parser = Parser()
+        self.doc_names = doc_names
         if(len(documents)>0):
             self.build(documents)
 
@@ -94,8 +95,9 @@ class VectorSpace:
         queryVector = self.buildQueryVector(searchList)
 
         ratings = [util.cosine(queryVector, documentVector) for documentVector in self.documentVectors]
-        ratings.sort(reverse=True)
-        return ratings
+        results = list(zip(self.doc_names, ratings))
+        results.sort(key=lambda x: x[1], reverse=True)
+        return results[:10]  # Return top 10 results
 
 
 if __name__ == '__main__':
@@ -104,7 +106,9 @@ if __name__ == '__main__':
 
     vectorSpace.load_documents("EnglishNews")
 
-    print(vectorSpace.doc_names[:5], vectorSpace.documents[:5])
+    vectorSpace = VectorSpace(vectorSpace.documents, vectorSpace.doc_names)
+
+    #print(vectorSpace.doc_names[:5], vectorSpace.documents[:5])
 
     #print(vectorSpace.vectorKeywordIndex)
 
@@ -112,6 +116,11 @@ if __name__ == '__main__':
 
     #print(vectorSpace.related(1))
 
-    #print(vectorSpace.search(["cat"]))
+    results = vectorSpace.search(["planet Taiwan typhoon"])
+
+    print("TF Cosine")
+    print(f"{'NewsID':<15}{'Score':>7}")
+    for name, score in results:
+        print(f"{name:<15}{score:>10.6f}")
 
 ###################################################
