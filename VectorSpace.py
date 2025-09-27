@@ -90,14 +90,19 @@ class VectorSpace:
         #return ratings
 
 
-    def search(self,searchList):
+    def search(self, searchList):
         """ search for documents that match based on a list of terms """
         queryVector = self.buildQueryVector(searchList)
 
-        ratings = [util.cosine(queryVector, documentVector) for documentVector in self.documentVectors]
-        results = list(zip(self.doc_names, ratings))
-        results.sort(key=lambda x: x[1], reverse=True)
-        return results[:10]  # Return top 10 results
+        ratingswithcosine = [util.cosine(queryVector, documentVector) for documentVector in self.documentVectors]
+        ratingswitheuclidean = [util.euclidean(queryVector, documentVector) for documentVector in self.documentVectors]
+
+        resultswithcosine = list(zip(self.doc_names, ratingswithcosine))
+        resultswitheuclidean = list(zip(self.doc_names, ratingswitheuclidean))
+
+        resultswithcosine.sort(key=lambda x: x[1], reverse=True)
+        resultswitheuclidean.sort(key=lambda x: x[1], reverse=True)
+        return resultswithcosine[:10], resultswitheuclidean[:10]  # Return top 10 results
 
 
 if __name__ == '__main__':
@@ -116,11 +121,20 @@ if __name__ == '__main__':
 
     #print(vectorSpace.related(1))
 
-    results = vectorSpace.search(["planet Taiwan typhoon"])
+    resultswithcosine, resultswitheuclidean = vectorSpace.search(["planet Taiwan typhoon"])
 
+    #TF Cosine
     print("TF Cosine")
-    print(f"{'NewsID':<15}{'Score':>7}")
-    for name, score in results:
-        print(f"{name:<15}{score:>10.6f}")
+    print(f"{'NewsID':<15}{'Score':>6}")
+    for name, score in resultswithcosine:
+        print(f"{name:<15}{score:>10.7f}")
+
+    print("-"*40)
+
+    #TF Euclidean
+    print("TF Euclidean")
+    print(f"{'NewsID':<15}{'Score':>6}")
+    for name, score in resultswitheuclidean:
+        print(f"{name:<15}{score:>10.7f}")
 
 ###################################################
