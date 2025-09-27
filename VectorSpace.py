@@ -1,6 +1,7 @@
 from pprint import pprint
 from Parser import Parser
 import util
+from math import log
 
 class VectorSpace:
     """ A algebraic model for representing text documents as vectors of identifiers. 
@@ -39,7 +40,25 @@ class VectorSpace:
     def build(self,documents):
         """ Create the vector space for the passed document strings """
         self.vectorKeywordIndex = self.getVectorKeywordIndex(documents)
-        self.documentVectors = [self.makeVector(document) for document in documents]
+        self.documentVectors = [self.makeVector(document) for document in documents] #TF weighted document vectors
+
+        df_count = [0] * len(self.vectorKeywordIndex)
+        for doc in documents:
+            wordList = self.parser.tokenise(doc)
+            wordList = self.parser.removeStopWords(wordList)
+            seen = set()
+            for word in wordList:
+                idx = self.vectorKeywordIndex.get(word)
+                if idx is not None and idx not in seen: # Check if the index is not None and not seen before
+                    df_count[idx] += 1
+                    seen.add(idx)
+        N = len(documents)
+        self.idf = [log(N / df_count[i]) if df_count[i] > 0 else 0.0 for i in range(len(df_count))]
+
+        self.documentVectors_tfidf = [] # TF-IDF weighted document vectors
+        for tf in self.documentVectors:
+            tfidf = [ tf[i] * self.idf[i] for i in range(len(self.vectorKeywordIndex)) ]
+            self.documentVectors_tfidf.append(tfidf)
 
         #print(self.vectorKeywordIndex)
         #print(self.documentVectors)
@@ -68,18 +87,18 @@ class VectorSpace:
     def makeVector(self, wordString):
         """ @pre: unique(vectorIndex) """
 
-        #Initialise vector with 0's
-        vector = [0] * len(self.vectorKeywordIndex)
+        vectorTF = [0] * len(self.vectorKeywordIndex)
         wordList = self.parser.tokenise(wordString)
         wordList = self.parser.removeStopWords(wordList)
         for word in wordList:
-            vector[self.vectorKeywordIndex[word]] += 1; #Use TF Model
-        return vector
+            vectorTF[self.vectorKeywordIndex[word]] += 1; #Use TF Model
+        return vectorTF
 
-
-    def buildQueryVector(self, termList):
+    def buildQueryVector(self, termList, use_tfidf=False):
         """ convert query string into a term vector """
         query = self.makeVector(" ".join(termList))
+        if use_tfidf:
+            return [query[i] * self.idf[i] for i in range(len(query))]
         return query
 
 
@@ -90,12 +109,13 @@ class VectorSpace:
         #return ratings
 
 
-    def search(self, searchList):
+    def search(self, searchList, use_tfidf=False):
         """ search for documents that match based on a list of terms """
-        queryVector = self.buildQueryVector(searchList)
+        docModel = self.documentVectors_tfidf if use_tfidf else self.documentVectors
+        queryVector = self.buildQueryVector(searchList, use_tfidf=use_tfidf)
 
-        ratingswithcosine = [util.cosine(queryVector, documentVector) for documentVector in self.documentVectors]
-        ratingswitheuclidean = [util.euclidean(queryVector, documentVector) for documentVector in self.documentVectors]
+        ratingswithcosine = [util.cosine(queryVector, documentVector) for documentVector in docModel]
+        ratingswitheuclidean = [util.euclideanSimilarity(queryVector, documentVector) for documentVector in docModel]
 
         resultswithcosine = list(zip(self.doc_names, ratingswithcosine))
         resultswitheuclidean = list(zip(self.doc_names, ratingswitheuclidean))
@@ -121,20 +141,39 @@ if __name__ == '__main__':
 
     #print(vectorSpace.related(1))
 
-    resultswithcosine, resultswitheuclidean = vectorSpace.search(["planet Taiwan typhoon"])
+    resultswithcosineTF, resultswitheuclideanTF = vectorSpace.search(["planet Taiwan typhoon"], use_tfidf=False) #TF weighted search
+    resultswithcosineTFIDF, resultswitheuclideanTFIDF = vectorSpace.search(["planet Taiwan typhoon"], use_tfidf=True) #TF-IDF weighted search
 
-    #TF Cosine
+    #TF Cosine similarity
     print("TF Cosine")
     print(f"{'NewsID':<15}{'Score':>6}")
-    for name, score in resultswithcosine:
+    for name, score in resultswithcosineTF:
         print(f"{name:<15}{score:>10.7f}")
 
     print("-"*40)
 
-    #TF Euclidean
+    #TF-IDF Cosine similarity
+    print("TF-IDF Cosine")
+    print(f"{'NewsID':<15}{'Score':>6}")
+    for name, score in resultswithcosineTFIDF:
+        print(f"{name:<15}{score:>10.7f}")
+
+    print("-"*40)
+
+    #TF Euclidean similarity
     print("TF Euclidean")
     print(f"{'NewsID':<15}{'Score':>6}")
-    for name, score in resultswitheuclidean:
+    for name, score in resultswitheuclideanTF:
         print(f"{name:<15}{score:>10.7f}")
+
+    print("-"*40)
+
+    #TF-IDF Euclidean distance
+    print("TF-IDF Euclidean")
+    print(f"{'NewsID':<15}{'Score':>6}")
+    for name, score in resultswitheuclideanTFIDF:
+        print(f"{name:<15}{score:>10.7f}")
+
+    print("-"*40)
 
 ###################################################
