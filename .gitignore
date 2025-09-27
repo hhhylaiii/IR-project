@@ -1,3 +1,5 @@
 # Python cache
-__pycache__/*.pyc
-EnglishNews/*.txt
+__pycache__/
+*.pyc
+EnglishNews/
+*.txt

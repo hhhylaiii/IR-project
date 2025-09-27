@@ -1,38 +1,44 @@
-#http://tartarus.org/~martin/PorterStemmer/python.txt
+# http://tartarus.org/~martin/PorterStemmer/python.txt
 from PorterStemmer import PorterStemmer
 
 class Parser:
+    #A processor for removing the commoner morphological and inflexional endings from words in English
+    stemmer=None
+    stopwords=[]
 
-	#A processor for removing the commoner morphological and inflexional endings from words in English
-	stemmer=None
+    def __init__(self,):
+        self.stemmer = PorterStemmer()
+        # English stopwords from ftp://ftp.cs.cornell.edu/pub/smart/english.stop
+        self.stopwords = set(open('english.stop', 'r').read().split())
+        self._stem_cache = {}
 
-	stopwords=[]
+    def clean(self, string):
+        """ remove any nasty grammar tokens from string """
+        string = string.replace(".","")
+        string = string.replace(r"\s+"," ")
+        string = string.lower()
+        return string
 
-	def __init__(self,):
-		self.stemmer = PorterStemmer()
+    def removeStopWords(self, list):
+        """ Remove common words which have no search value """
+        return [word for word in list if word not in self.stopwords ]
 
-		#English stopwords from ftp://ftp.cs.cornell.edu/pub/smart/english.stop
-		self.stopwords = open('english.stop', 'r').read().split()
+    def tokenise(self, string):
+        """ break string up into tokens and stem words """
+        string = self.clean(string)
+        words = string.split(" ")
 
-
-	def clean(self, string):
-		""" remove any nasty grammar tokens from string """
-		string = string.replace(".","")
-		string = string.replace(r"\s+"," ")
-		string = string.lower()
-		return string
-	
-
-	def removeStopWords(self,list):
-		""" Remove common words which have no search value """
-		return [word for word in list if word not in self.stopwords ]
-
-
-	def tokenise(self, string): #將string轉成token並且做stemming
-		""" break string up into tokens and stem words """
-		string = self.clean(string)
-		words = string.split(" ")
-		
-		return [self.stemmer.stem(word,0,len(word)-1) for word in words]
+        stem = self.stemmer.stem
+        cache = self._stem_cache
+        out = []
+        for w in words:
+            if not w:
+                continue
+            s = cache.get(w)
+            if s is None:
+                s = stem(w, 0, len(w)-1)
+                cache[w] = s
+            out.append(s)
+        return out
 
 

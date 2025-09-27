@@ -2,6 +2,7 @@ from pprint import pprint
 from Parser import Parser
 import util
 from math import log
+import numpy as np 
 
 class VectorSpace:
     """ A algebraic model for representing text documents as vectors of identifiers. 
@@ -18,7 +19,6 @@ class VectorSpace:
     #Tidies terms
     parser=None
 
-
     def __init__(self, documents=[], doc_names=[]):
         self.documentVectors=[]
         self.parser = Parser()
@@ -31,75 +31,87 @@ class VectorSpace:
         self.doc_names = []
         self.documents = []
         for filename in sorted(os.listdir(folder_path), key=lambda x: int(re.findall(r'\d+', x)[0])):
-            if(filename.endswith(".txt")):
+            if filename.endswith(".txt"):
                 with open(os.path.join(folder_path, filename), 'r', encoding='utf-8') as file:
                     self.documents.append(file.read())
                     self.doc_names.append(filename)
         return self.doc_names, self.documents
 
-    def build(self,documents):
+    def build(self, documents):
         """ Create the vector space for the passed document strings """
+
         self.vectorKeywordIndex = self.getVectorKeywordIndex(documents)
-        self.documentVectors = [self.makeVector(document) for document in documents] #TF weighted document vectors
 
-        df_count = [0] * len(self.vectorKeywordIndex)
-        for doc in documents:
-            wordList = self.parser.tokenise(doc)
-            wordList = self.parser.removeStopWords(wordList)
-            seen = set()
-            for word in wordList:
-                idx = self.vectorKeywordIndex.get(word)
-                if idx is not None and idx not in seen: # Check if the index is not None and not seen before
-                    df_count[idx] += 1
-                    seen.add(idx)
+        V = len(self.vectorKeywordIndex)
+        self._df_count = [0] * V
+        self._accumulating_df = True 
+
+        self.documentVectors = [self.makeVector(document) for document in documents]
+
+        self._accumulating_df = False
+
         N = len(documents)
-        self.idf = [log(N / df_count[i]) if df_count[i] > 0 else 0.0 for i in range(len(df_count))]
+        self.idf = [log(N / self._df_count[i]) if self._df_count[i] > 0 else 0.0 for i in range(V)]
+        self._idf_np = np.array(self.idf, dtype=np.float32)
 
-        self.documentVectors_tfidf = [] # TF-IDF weighted document vectors
-        for tf in self.documentVectors:
-            tfidf = [ tf[i] * self.idf[i] for i in range(len(self.vectorKeywordIndex)) ]
-            self.documentVectors_tfidf.append(tfidf)
 
-        #print(self.vectorKeywordIndex)
-        #print(self.documentVectors)
+        self.documentVectors = [np.array(tf, dtype=np.float32) for tf in self.documentVectors]
 
+        self.documentVectors_tfidf = [tf * self._idf_np for tf in self.documentVectors]
 
     def getVectorKeywordIndex(self, documentList):
         """ create the keyword associated to the position of the elements within the document vectors """
-
-        #Mapped documents into a single word string	
         vocabularyString = " ".join(documentList)
-
         vocabularyList = self.parser.tokenise(vocabularyString)
-        #Remove common words which have no search value
         vocabularyList = self.parser.removeStopWords(vocabularyList)
         uniqueVocabularyList = util.removeDuplicates(vocabularyList)
 
         vectorIndex={}
         offset=0
-        #Associate a position with the keywords which maps to the dimension on the vector used to represent this word
         for word in uniqueVocabularyList:
             vectorIndex[word]=offset
             offset+=1
         return vectorIndex  #(keyword:position)
 
-
     def makeVector(self, wordString):
         """ @pre: unique(vectorIndex) """
+        V = len(self.vectorKeywordIndex)
+        vectorTF = [0] * V
 
-        vectorTF = [0] * len(self.vectorKeywordIndex)
         wordList = self.parser.tokenise(wordString)
         wordList = self.parser.removeStopWords(wordList)
+
+        seen = set() if getattr(self, "_accumulating_df", False) else None
+
+        vki = self.vectorKeywordIndex 
         for word in wordList:
-            vectorTF[self.vectorKeywordIndex[word]] += 1; #Use TF Model
+            idx = vki.get(word)
+            if idx is None:
+                continue 
+            if seen is not None and vectorTF[idx] == 0:
+                seen.add(idx)
+            vectorTF[idx] += 1  # Raw TF
+
+        if seen is not None:
+            for idx in seen:
+                self._df_count[idx] += 1
+
         return vectorTF
 
     def buildQueryVector(self, termList, use_tfidf=False):
         """ convert query string into a term vector """
-        query = self.makeVector(" ".join(termList))
+        V = len(self.vectorKeywordIndex)
+        q = np.zeros(V, dtype=np.float32)
+        wordList = self.parser.tokenise(" ".join(termList))
+        wordList = self.parser.removeStopWords(wordList)
+        vki = self.vectorKeywordIndex
+        for w in wordList:
+            idx = vki.get(w)
+            if idx is not None:
+                q[idx] += 1.0
         if use_tfidf:
-            return [query[i] * self.idf[i] for i in range(len(query))]
-        return query
+            return q * self._idf_np
+        return q
 
 
     #def related(self,documentId):
