@@ -3,6 +3,7 @@ from Parser import Parser
 import util
 from math import log
 import numpy as np 
+import argparse
 
 class VectorSpace:
     """ A algebraic model for representing text documents as vectors of identifiers. 
@@ -141,23 +142,16 @@ class VectorSpace:
 
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description="Information Retrieval Assignment")
+    parser.add_argument("--en_query", type=str, required=True, help="English query string")
+    args = parser.parse_args()
 
     vectorSpace = VectorSpace()
-
     vectorSpace.load_documents("EnglishNews")
-
     vectorSpace = VectorSpace(vectorSpace.documents, vectorSpace.doc_names)
 
-    #print(vectorSpace.doc_names[:5], vectorSpace.documents[:5])
-
-    #print(vectorSpace.vectorKeywordIndex)
-
-    #print(vectorSpace.documentVectors)
-
-    #print(vectorSpace.related(1))
-
-    resultswithcosineTF, resultswitheuclidean_s_TF , resultswitheuclidean_d_TF = vectorSpace.search(["planet Taiwan typhoon"], use_tfidf=False) #TF weighted search
-    resultswithcosineTFIDF, resultswitheuclidean_s_TFIDF, resultswitheuclidean_d_TFIDF = vectorSpace.search(["planet Taiwan typhoon"], use_tfidf=True) #TF-IDF weighted search
+    resultswithcosineTF, resultswitheuclidean_s_TF , resultswitheuclidean_d_TF = vectorSpace.search(args.en_query.split(), use_tfidf=False) #TF weighted search
+    resultswithcosineTFIDF, resultswitheuclidean_s_TFIDF, resultswitheuclidean_d_TFIDF = vectorSpace.search(args.en_query.split(), use_tfidf=True) #TF-IDF weighted search
 
     #TF Cosine similarity
     print("TF Cosine")
@@ -191,4 +185,4 @@ if __name__ == '__main__':
 
     print("-"*40)
 
-###################################################
+    #########################################################
