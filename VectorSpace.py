@@ -124,7 +124,7 @@ class VectorSpace:
 
         resultswithcosine.sort(key=lambda x: x[1], reverse=True)
         resultswitheuclidean_s.sort(key=lambda x: x[1], reverse=True)
-        resultswitheuclidean_d.sort(key=lambda x: x[1], reverse=True)
+        resultswitheuclidean_d.sort(key=lambda x: x[1], reverse=False)  # For Euclidean distance, lower is better
         return resultswithcosine[:10], resultswitheuclidean_s[:10], resultswitheuclidean_d[:10]  # Return top 10 results
 
 
