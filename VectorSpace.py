@@ -24,6 +24,17 @@ class VectorSpace:
         if(len(documents)>0):
             self.build(documents)
 
+    def load_documents(self, folder_path):
+        import os, re
+        self.doc_names = []
+        self.documents = []
+        for filename in sorted(os.listdir(folder_path), key=lambda x: int(re.findall(r'\d+', x)[0])):
+            if(filename.endswith(".txt")):
+                with open(os.path.join(folder_path, filename), 'r', encoding='utf-8') as file:
+                    self.documents.append(file.read())
+                    self.doc_names.append(filename)
+        return self.doc_names, self.documents
+
     def build(self,documents):
         """ Create the vector space for the passed document strings """
         self.vectorKeywordIndex = self.getVectorKeywordIndex(documents)
@@ -88,13 +99,12 @@ class VectorSpace:
 
 
 if __name__ == '__main__':
-    #test data
-    documents = ["The cat in the hat disabled",
-                 "A cat is a fine pet ponies.",
-                 "Dogs and cats make good pets.",
-                 "I haven't got a hat."]
 
-    vectorSpace = VectorSpace(documents)
+    vectorSpace = VectorSpace()
+
+    vectorSpace.load_documents("EnglishNews")
+
+    print(vectorSpace.doc_names[:5], vectorSpace.documents[:5])
 
     #print(vectorSpace.vectorKeywordIndex)
 
@@ -102,6 +112,6 @@ if __name__ == '__main__':
 
     #print(vectorSpace.related(1))
 
-    print(vectorSpace.search(["cat"]))
+    #print(vectorSpace.search(["cat"]))
 
 ###################################################
