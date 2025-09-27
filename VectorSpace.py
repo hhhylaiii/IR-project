@@ -115,14 +115,17 @@ class VectorSpace:
         queryVector = self.buildQueryVector(searchList, use_tfidf=use_tfidf)
 
         ratingswithcosine = [util.cosine(queryVector, documentVector) for documentVector in docModel]
-        ratingswitheuclidean = [util.euclideanSimilarity(queryVector, documentVector) for documentVector in docModel]
+        ratingswitheuclidean_s = [util.euclideanSimilarity(queryVector, documentVector) for documentVector in docModel]
+        ratingswitheuclidean_d = [util.euclidean(queryVector, documentVector) for documentVector in docModel]
 
         resultswithcosine = list(zip(self.doc_names, ratingswithcosine))
-        resultswitheuclidean = list(zip(self.doc_names, ratingswitheuclidean))
+        resultswitheuclidean_s = list(zip(self.doc_names, ratingswitheuclidean_s))
+        resultswitheuclidean_d = list(zip(self.doc_names, ratingswitheuclidean_d))
 
         resultswithcosine.sort(key=lambda x: x[1], reverse=True)
-        resultswitheuclidean.sort(key=lambda x: x[1], reverse=True)
-        return resultswithcosine[:10], resultswitheuclidean[:10]  # Return top 10 results
+        resultswitheuclidean_s.sort(key=lambda x: x[1], reverse=True)
+        resultswitheuclidean_d.sort(key=lambda x: x[1], reverse=True)
+        return resultswithcosine[:10], resultswitheuclidean_s[:10], resultswitheuclidean_d[:10]  # Return top 10 results
 
 
 if __name__ == '__main__':
@@ -141,8 +144,8 @@ if __name__ == '__main__':
 
     #print(vectorSpace.related(1))
 
-    resultswithcosineTF, resultswitheuclideanTF = vectorSpace.search(["planet Taiwan typhoon"], use_tfidf=False) #TF weighted search
-    resultswithcosineTFIDF, resultswitheuclideanTFIDF = vectorSpace.search(["planet Taiwan typhoon"], use_tfidf=True) #TF-IDF weighted search
+    resultswithcosineTF, resultswitheuclidean_s_TF , resultswitheuclidean_d_TF = vectorSpace.search(["planet Taiwan typhoon"], use_tfidf=False) #TF weighted search
+    resultswithcosineTFIDF, resultswitheuclidean_s_TFIDF, resultswitheuclidean_d_TFIDF = vectorSpace.search(["planet Taiwan typhoon"], use_tfidf=True) #TF-IDF weighted search
 
     #TF Cosine similarity
     print("TF Cosine")
@@ -163,7 +166,7 @@ if __name__ == '__main__':
     #TF Euclidean similarity
     print("TF Euclidean")
     print(f"{'NewsID':<15}{'Score':>6}")
-    for name, score in resultswitheuclideanTF:
+    for name, score in resultswitheuclidean_s_TF:
         print(f"{name:<15}{score:>10.7f}")
 
     print("-"*40)
@@ -171,7 +174,7 @@ if __name__ == '__main__':
     #TF-IDF Euclidean distance
     print("TF-IDF Euclidean")
     print(f"{'NewsID':<15}{'Score':>6}")
-    for name, score in resultswitheuclideanTFIDF:
+    for name, score in resultswitheuclidean_d_TFIDF:
         print(f"{name:<15}{score:>10.7f}")
 
     print("-"*40)
