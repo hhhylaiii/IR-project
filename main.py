@@ -42,6 +42,7 @@ class VectorSpace:
     def build(self, documents):
         """ Create the vector space for the passed document strings """
 
+        self.documents = documents
         self.vectorKeywordIndex = self.getVectorKeywordIndex(documents)
 
         V = len(self.vectorKeywordIndex)
@@ -174,45 +175,53 @@ class VectorSpace:
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Information Retrieval Assignment")
     parser.add_argument("--en_query", type=str, required=True, help="English query string")
+    parser.add_argument("--feedback", action="store_true", help="Enable pseudo relevance feedback")
     args = parser.parse_args()
 
     vectorSpace = VectorSpace()
     vectorSpace.load_documents("EnglishNews")
-    vectorSpace = VectorSpace(vectorSpace.documents, vectorSpace.doc_names)
+    vectorSpace.build(vectorSpace.documents)
 
     resultswithcosineTF, resultswitheuclidean_s_TF , resultswitheuclidean_d_TF = vectorSpace.search(args.en_query.split(), use_tfidf=False) #TF weighted search
     resultswithcosineTFIDF, resultswitheuclidean_s_TFIDF, resultswitheuclidean_d_TFIDF = vectorSpace.search(args.en_query.split(), use_tfidf=True) #TF-IDF weighted search
 
-    #TF Cosine similarity
-    print("TF Cosine")
-    print(f"{'NewsID':<15}{'Score':>6}")
-    for name, score in resultswithcosineTF:
-        print(f"{name:<15}{score:>10.7f}")
+    if not args.feedback:
+        #TF Cosine similarity
+        print("TF Cosine")
+        print(f"{'NewsID':<15}{'Score':>6}")
+        for name, score in resultswithcosineTF: 
+            print(f"{name:<15}{score:>10.7f}")
 
-    print("-"*40)
+        print("-"*40)
 
-    #TF-IDF Cosine similarity
-    print("TF-IDF Cosine")
-    print(f"{'NewsID':<15}{'Score':>6}")
-    for name, score in resultswithcosineTFIDF:
-        print(f"{name:<15}{score:>10.7f}")
+        #TF-IDF Cosine similarity
+        print("TF-IDF Cosine")
+        print(f"{'NewsID':<15}{'Score':>6}")
+        for name, score in resultswithcosineTFIDF:
+            print(f"{name:<15}{score:>10.7f}")
 
-    print("-"*40)
+        print("-"*40)
 
-    #TF Euclidean similarity
-    print("TF Euclidean")
-    print(f"{'NewsID':<15}{'Score':>6}")
-    for name, score in resultswitheuclidean_s_TF:
-        print(f"{name:<15}{score:>10.7f}")
+        #TF Euclidean similarity
+        print("TF Euclidean")
+        print(f"{'NewsID':<15}{'Score':>6}")
+        for name, score in resultswitheuclidean_s_TF:
+            print(f"{name:<15}{score:>10.7f}")
 
-    print("-"*40)
+        print("-"*40)
 
-    #TF-IDF Euclidean distance
-    print("TF-IDF Euclidean")
-    print(f"{'NewsID':<15}{'Score':>6}")
-    for name, score in resultswitheuclidean_d_TFIDF:
-        print(f"{name:<15}{score:>10.7f}")
+        #TF-IDF Euclidean distance
+        print("TF-IDF Euclidean")
+        print(f"{'NewsID':<15}{'Score':>6}")
+        for name, score in resultswitheuclidean_d_TFIDF:
+            print(f"{name:<15}{score:>10.7f}")
 
-    print("-"*40)
+    # Pseudo Relevance Feedback
+    if args.feedback:
+        print("TF-IDF Cosine with Relevance Feedback")
+        feedback_results = vectorSpace.feedback_research(args.en_query.split(), x=1.0, y=0.5)
+        print(f"{'NewsID':<15}{'Score':>6}")
+        for name, score in feedback_results:
+            print(f"{name:<15}{score:>10.7f}")
 
     #######################################################
