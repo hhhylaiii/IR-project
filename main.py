@@ -1,4 +1,5 @@
 from pprint import pprint
+import sys
 from Parser import Parser
 import util
 from math import log
@@ -139,6 +140,35 @@ class VectorSpace:
         resultswitheuclidean_s.sort(key=lambda x: x[1], reverse=True)
         resultswitheuclidean_d.sort(key=lambda x: x[1], reverse=False)  # For Euclidean distance, lower is better
         return resultswithcosine[:10], resultswitheuclidean_s[:10], resultswitheuclidean_d[:10]  # Return top 10 results
+    
+    def extract_nv_terms(self, doc):
+        try:
+            import nltk
+            from nltk import pos_tag, word_tokenize
+        except Exception:
+            print("Error: Requires nltk from https://www.nltk.org/. Have you installed it?")
+            sys.exit()
+
+        tokens = [t for t in word_tokenize(doc) if t.isalpha()]
+        tagged = pos_tag(tokens)
+        extracted_doc = [term.lower() for (term, tag) in tagged if tag.startswith('NN') or tag.startswith('VB')]
+        return self.parser.tokenise(" ".join(extracted_doc))
+    
+    def feedback_research(self, original_query, x=1.0, y=0.5):
+        original_query_results, _, _= self.search(original_query,use_tfidf=True)
+
+        top1_name = original_query_results[0][0]
+        top1_index = self.doc_names.index(top1_name)
+        nv_terms = self.extract_nv_terms(self.documents[top1_index])
+
+        q_orig = self.buildQueryVector(original_query, use_tfidf=True)
+        q_fb = self.buildQueryVector(nv_terms, use_tfidf=True)
+        q_new = x*q_orig + y*q_fb
+
+        ratingswithcosine = [util.cosine(q_new, documentVector) for documentVector in self.documentVectors_tfidf]
+        resultswithcosine = list(zip(self.doc_names, ratingswithcosine))
+        resultswithcosine.sort(key=lambda x: x[1], reverse=True)
+        return resultswithcosine[:10]
 
 
 if __name__ == '__main__':
@@ -185,4 +215,4 @@ if __name__ == '__main__':
 
     print("-"*40)
 
-    #########################################################
+    #######################################################
