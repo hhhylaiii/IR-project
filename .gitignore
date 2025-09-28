@@ -5,3 +5,4 @@ EnglishNews/
 *.txt
 ChineseNews/
 *.txt
+.venv/

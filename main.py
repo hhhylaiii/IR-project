@@ -148,7 +148,7 @@ class VectorSpace:
             from nltk import pos_tag, word_tokenize
         except Exception:
             print("Error: Requires nltk from https://www.nltk.org/. Have you installed it?")
-            sys.exit()
+            sys.exit(1)
 
         tokens = [t for t in word_tokenize(doc) if t.isalpha()]
         tagged = pos_tag(tokens)
