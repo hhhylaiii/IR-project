@@ -3,6 +3,14 @@ import re
 
 try:
     import jieba
+    import logging
+    try:
+        jieba.setLogLevel(logging.ERROR)
+    except Exception:
+        try:
+            jieba.default_logger.setLevel(logging.ERROR)
+        except Exception:
+            pass
 except:
     print("Error: Requires jieba from https://github.com/fxsjy/jieba. Have you installed it?")
     sys.exit(1)

@@ -40,5 +40,3 @@ class Parser:
                 cache[w] = s
             out.append(s)
         return out
-
-

@@ -5,6 +5,7 @@ import util
 from math import log
 import numpy as np 
 import argparse
+from ParserZH import ParserZH
 
 class VectorSpace:
     """ A algebraic model for representing text documents as vectors of identifiers. 
@@ -30,13 +31,24 @@ class VectorSpace:
 
     def load_documents(self, folder_path):
         import os, re
+
+        def _read_text(path):
+            for enc in ('utf-8', 'utf-8-sig', 'cp950', 'big5hkscs', 'big5', 'latin-1'):
+                try:
+                    with open(path, 'r', encoding=enc) as f:
+                        return f.read()
+                except UnicodeDecodeError:
+                    continue
+            with open(path, 'r', encoding='utf-8', errors='ignore') as f:
+                return f.read()
+        
         self.doc_names = []
         self.documents = []
         for filename in sorted(os.listdir(folder_path), key=lambda x: int(re.findall(r'\d+', x)[0])):
             if filename.endswith(".txt"):
-                with open(os.path.join(folder_path, filename), 'r', encoding='utf-8') as file:
-                    self.documents.append(file.read())
-                    self.doc_names.append(filename)
+                full = os.path.join(folder_path, filename)
+                self.documents.append(_read_text(full))
+                self.doc_names.append(filename)
         return self.doc_names, self.documents
 
     def build(self, documents):
@@ -174,54 +186,82 @@ class VectorSpace:
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Information Retrieval Assignment")
-    parser.add_argument("--en_query", type=str, required=True, help="English query string")
+    parser.add_argument("--en_query", type=str, help="English query string")
     parser.add_argument("--feedback", action="store_true", help="Enable pseudo relevance feedback")
+    parser.add_argument("--ch_query", type=str, help="Chinese query string")
     args = parser.parse_args()
 
-    vectorSpace = VectorSpace()
-    vectorSpace.load_documents("EnglishNews")
-    vectorSpace.build(vectorSpace.documents)
+    if not args.en_query and not args.ch_query:
+        print("Error: Please provide either --en_query <text> or --ch_query <文字>.")
+        exit(1)
 
-    resultswithcosineTF, resultswitheuclidean_s_TF , resultswitheuclidean_d_TF = vectorSpace.search(args.en_query.split(), use_tfidf=False) #TF weighted search
-    resultswithcosineTFIDF, resultswitheuclidean_s_TFIDF, resultswitheuclidean_d_TFIDF = vectorSpace.search(args.en_query.split(), use_tfidf=True) #TF-IDF weighted search
+    if args.ch_query:
+        vectorSpace = VectorSpace()
+        vectorSpace.load_documents("ChineseNews")
+        vectorSpace.parser = ParserZH(hmm=True)
+        vectorSpace.build(vectorSpace.documents)
 
-    if not args.feedback:
-        #TF Cosine similarity
-        print("TF Cosine")
+        results_TF, _, _ = vectorSpace.search(args.ch_query.split(), use_tfidf=False)
+        results_TFIDF, _, _ = vectorSpace.search(args.ch_query.split(), use_tfidf=True)
+
+        print("Chinese TF Cosine")
         print(f"{'NewsID':<15}{'Score':>6}")
-        for name, score in resultswithcosineTF: 
+        for name, score in results_TF[:10]:
             print(f"{name:<15}{score:>10.7f}")
-
         print("-"*40)
 
-        #TF-IDF Cosine similarity
-        print("TF-IDF Cosine")
+        print("Chinese TF-IDF Cosine")
         print(f"{'NewsID':<15}{'Score':>6}")
-        for name, score in resultswithcosineTFIDF:
+        for name, score in results_TFIDF[:10]:
             print(f"{name:<15}{score:>10.7f}")
-
         print("-"*40)
+    
+    if args.en_query:
+        vectorSpace = VectorSpace()
+        vectorSpace.load_documents("EnglishNews")
+        vectorSpace.build(vectorSpace.documents)
 
-        #TF Euclidean similarity
-        print("TF Euclidean")
-        print(f"{'NewsID':<15}{'Score':>6}")
-        for name, score in resultswitheuclidean_s_TF:
-            print(f"{name:<15}{score:>10.7f}")
+        resultswithcosineTF, resultswitheuclidean_s_TF , resultswitheuclidean_d_TF = vectorSpace.search(args.en_query.split(), use_tfidf=False) #TF weighted search
+        resultswithcosineTFIDF, resultswitheuclidean_s_TFIDF, resultswitheuclidean_d_TFIDF = vectorSpace.search(args.en_query.split(), use_tfidf=True) #TF-IDF weighted search
 
-        print("-"*40)
+        if not args.feedback:
+            #TF Cosine similarity
+            print("English TF Cosine")
+            print(f"{'NewsID':<15}{'Score':>6}")
+            for name, score in resultswithcosineTF: 
+                print(f"{name:<15}{score:>10.7f}")
 
-        #TF-IDF Euclidean distance
-        print("TF-IDF Euclidean")
-        print(f"{'NewsID':<15}{'Score':>6}")
-        for name, score in resultswitheuclidean_d_TFIDF:
-            print(f"{name:<15}{score:>10.7f}")
+            print("-"*40)
 
-    # Pseudo Relevance Feedback
-    if args.feedback:
-        print("TF-IDF Cosine with Relevance Feedback")
-        feedback_results = vectorSpace.feedback_research(args.en_query.split(), x=1.0, y=0.5)
-        print(f"{'NewsID':<15}{'Score':>6}")
-        for name, score in feedback_results:
-            print(f"{name:<15}{score:>10.7f}")
+            #TF-IDF Cosine similarity
+            print("English TF-IDF Cosine")
+            print(f"{'NewsID':<15}{'Score':>6}")
+            for name, score in resultswithcosineTFIDF:
+                print(f"{name:<15}{score:>10.7f}")
 
-    #######################################################
+            print("-"*40)
+
+            #TF Euclidean similarity
+            print("English TF Euclidean")
+            print(f"{'NewsID':<15}{'Score':>6}")
+            for name, score in resultswitheuclidean_s_TF:
+                print(f"{name:<15}{score:>10.7f}")
+
+            print("-"*40)
+
+            #TF-IDF Euclidean distance
+            print("English TF-IDF Euclidean")
+            print(f"{'NewsID':<15}{'Score':>6}")
+            for name, score in resultswitheuclidean_d_TFIDF:
+                print(f"{name:<15}{score:>10.7f}")
+            print("-"*40)
+
+        # Pseudo Relevance Feedback
+        if args.feedback:
+            print("English TF-IDF Cosine with Relevance Feedback")
+            feedback_results = vectorSpace.feedback_research(args.en_query.split(), x=1.0, y=0.5)
+            print(f"{'NewsID':<15}{'Score':>6}")
+            for name, score in feedback_results:
+                print(f"{name:<15}{score:>10.7f}")
+            print("-"*40)
+#######################################################
