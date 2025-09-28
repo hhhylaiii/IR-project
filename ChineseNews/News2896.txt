@@ -1,0 +1,2 @@
+升級GA4必學！BigQuery 是什麼？如何能幫行銷人「如虎添翼」？
+BigQuery 是什麼？為什麼升級 Google Analytics 4（GA4）一定要串接 BigQuery？全球最普及的

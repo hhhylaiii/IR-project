@@ -1,0 +1,2 @@
+GPT-4為何這麼強？輝達GPU如何助攻？OpenAI首席科學家、黃仁勳解密
+由人工智慧OpenAI所打造的ChatGPT，風潮延燒全球，當中也用到不少繪圖晶片大廠輝達（NVIDIA）出產的GPU。

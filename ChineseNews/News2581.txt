@@ -1,0 +1,2 @@
+Bing、Edge都能「文字生成圖像」了！微軟攜手OpenAI，還有哪些更新？
+3.22更新微軟在搜索引擎 Bing 以及瀏覽器 Edge 中，更新了圖像生成功能！將使用 OpenAI 的 DALL

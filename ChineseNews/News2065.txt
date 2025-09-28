@@ -1,0 +1,2 @@
+3個步驟，快速把ChatGPT變成主畫面的「App」！怎麼做一次看
+先說結論，ChatGPT 目前沒有官方的 App 可以下載。但因為 OpenAI 在三月初釋出 ChatGPT API 後，讓許多

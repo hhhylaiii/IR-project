@@ -1,0 +1,2 @@
+還用PhotoShop去背合成？Collage Diffusion幫你拼成超自然大圖，還公開演算法
+在過去，每一個網站小編都會用PhotoShop來將圖片去背，然後把一張圖片貼在另外一張圖片的圖層上

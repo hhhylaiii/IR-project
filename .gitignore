@@ -1,8 +1,5 @@
 # Python cache
 __pycache__/
 *.pyc
-EnglishNews/
-*.txt
-ChineseNews/
-*.txt
 .venv/
+.vscode/

@@ -1,0 +1,2 @@
+在Excel裡就能問ChatGPT，解決公式、函數問題！怎麼操作一次看
+自從OpenAI開放了ChatGPT API給開發者使用後，許多各式各樣的應用在短短的時間內就都冒了出來，尤其是Chrome上

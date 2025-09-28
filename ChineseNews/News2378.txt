@@ -1,0 +1,2 @@
+患者一講話，秒生成病歷草稿！微軟利用OpenAI減輕醫生負擔，還能怎麼應用？
+微軟 (MSFT-US) 的語音識別子公司 Nuance Communications 周一 (20 日) 發布 Dra
