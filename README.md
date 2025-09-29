@@ -125,7 +125,7 @@ python main.py --eval
 
 - **Evaluation (Task 4)**
   - **MRR@10**: reciprocal rank of first relevant hit
-  - **AP@10**: precision at relevant hits in top-10, normalized by `min(10, |Rel(q)|)`
+  - **AP@10**: precision at relevant hits in top-10
   - **MAP@10**: mean of AP@10
   - **Recall@10**: `|top10 ∩ Rel(q)| / |Rel(q)|`
 
@@ -133,7 +133,7 @@ python main.py --eval
 
 | Task  | Example Command | Time (s) |
 |-------|-----------------|----------|
-| Task 1 | `python main.py --en_query "planet Taiwan typhoon"` | `<TBD>` |
-| Task 2 | `python main.py --ch_query "音樂 科技"` | `<TBD>` |
-| Task 3 | `python main.py --en_query "planet Taiwan typhoon" --feedback` | `<TBD>` |
-| Task 4 | `python main.py --eval` | `<TBD>` |
+| Task 1 | `python main.py --en_query "planet Taiwan typhoon"` | `<6.65s>` |
+| Task 2 | `python main.py --en_query "planet Taiwan typhoon" --feedback` | `<7.15s>` |
+| Task 3 | `python main.py --ch_query "音樂 科技"` | `<4.15s>` |
+| Task 4 | `python main.py --eval` | `<4.18s>` |
