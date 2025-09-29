@@ -26,7 +26,6 @@ Project 1/
 
 **Requirements**
 - Python 3.8+
-- OS: Windows (WSL/Ubuntu) or Linux
 - All file paths are relative to the project root.
 
 **Install dependencies**
@@ -34,11 +33,9 @@ Project 1/
 pip install numpy jieba nltk
 ```
 
-**NLTK data (for Task 3 only)**
+**NLTK data (for Task 2 only)**
 ```bash
 python -c "import nltk; nltk.download('punkt'); nltk.download('averaged_perceptron_tagger')"
-# For newer NLTK versions:
-# python -c "import nltk; nltk.download('averaged_perceptron_tagger_eng')"
 ```
 
 ## Command-line Interface
@@ -50,13 +47,13 @@ python -c "import nltk; nltk.download('punkt'); nltk.download('averaged_perceptr
 
 > If none of `--en_query`, `--ch_query`, or `--eval` is provided, the program exits with an error.
 
-## Tasks, Usage & Outputs
+## Tasks & Outputs
 
-### Task 1 — English Retrieval (TF / TF-IDF; Cosine & Euclidean)
+### Task 1 — English Retrieval (TF / TF-IDF; Cosine / Euclidean)
 
 **Run**
 ```bash
-python main.py --en_query "airline fuel price"
+python main.py --en_query <query>
 ```
 
 **Output**
@@ -64,27 +61,12 @@ python main.py --en_query "airline fuel price"
 
 **Imports**
 - `numpy`
-- Local: `VectorSpace.py`, `Parser.py`, `PorterStemmer.py`, `util.py`, `english.stop`
 
-### Task 2 — Chinese Retrieval (Jieba)
-
-**Run**
-```bash
-python main.py --ch_query "音樂 科技"
-```
-
-**Output**
-- Top-10 by Cosine (TF and TF-IDF)
-
-**Imports**
-- `jieba`
-- Local: `ParserZH.py`, `VectorSpace.py`, `util.py`, `chinese.stop`, `dict.txt.big`
-
-### Task 3 — Pseudo Relevance Feedback (English)
+### Task 2 — Pseudo Relevance Feedback (English)
 
 **Run**
 ```bash
-python main.py --en_query "airline fuel price" --feedback
+python main.py --en_query <query> --feedback
 ```
 
 **Output**
@@ -93,7 +75,19 @@ python main.py --en_query "airline fuel price" --feedback
 
 **Imports**
 - `nltk`, `numpy`
-- Local: `VectorSpace.py`, `Parser.py`, `PorterStemmer.py`, `util.py`, `english.stop`
+
+### Task 3 — Chinese Retrieval (Jieba)
+
+**Run**
+```bash
+python main.py --ch_query <query>
+```
+
+**Output**
+- Top-10 by Cosine (TF and TF-IDF)
+
+**Imports**
+- `jieba`
 
 ### Task 4 — Evaluation (MRR@10, MAP@10, Recall@10)
 
@@ -107,7 +101,6 @@ python main.py --eval
 
 **Imports**
 - `numpy`
-- Local: `Eval.py`, `VectorSpace.py`, `Parser.py`, `PorterStemmer.py`, `util.py`, `english.stop`
 
 ## Implementation Details
 
@@ -126,7 +119,7 @@ python main.py --eval
   - Euclidean: `1/(1+dist)` similarity or raw distance
   - Results sorted and Top-10 printed
 
-- **Relevance Feedback (Task 3)**
+- **Relevance Feedback (Task 2)**
   - Take top-1 document, extract nouns/verbs (NLTK POS tagging)
   - Build feedback vector and combine with original query
 
@@ -140,7 +133,7 @@ python main.py --eval
 
 | Task  | Example Command | Time (s) |
 |-------|-----------------|----------|
-| Task 1 | `python main.py --en_query "..."` | `<TBD>` |
-| Task 2 | `python main.py --ch_query "..."` | `<TBD>` |
-| Task 3 | `python main.py --en_query "..." --feedback` | `<TBD>` |
+| Task 1 | `python main.py --en_query "planet Taiwan typhoon"` | `<TBD>` |
+| Task 2 | `python main.py --ch_query "音樂 科技"` | `<TBD>` |
+| Task 3 | `python main.py --en_query "planet Taiwan typhoon" --feedback` | `<TBD>` |
 | Task 4 | `python main.py --eval` | `<TBD>` |
